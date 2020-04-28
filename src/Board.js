@@ -1,3 +1,46 @@
+class drawBoard {
+  constructor(board) {
+    
+  }
+
+  drawBoard() {
+
+  }
+}
+
+class CreateBoard {
+  constructor(start=false) {
+    this.board = this.createBoard(start);
+  }
+  createBoard(start) {
+    if(start){
+      return this.defaultBoard();
+    }
+  }
+
+  defaultBoard() {
+    var names = data.pieces.Names;
+    var tiles=[], pieces=[];
+    for (var x = 0; x < 8; x++) {
+      tiles[x] = [];
+      for (var y = 0; y < 8; y++) { tiles[x][y] = new Tile(x, y, tileSize); }
+    }
+    for (var x = 0; x < 8; x++) {
+      // Creates all the pieces - goes left to right doing both a pawn & the piece under that on both sides
+      pieces.push(new window[names[x]](x, 0, names[x], false, tileSize));
+      tiles[x][0].piece = pieces[pieces.length - 1];
+      pieces.push(new Pawn(x, 1, names[8], false, tileSize));
+      tiles[x][1].piece = pieces[pieces.length - 1];
+      pieces.push(new window[names[x]](x, 7, names[x], true, tileSize));
+      tiles[x][7].piece = pieces[pieces.length - 1];
+      pieces.push(new Pawn(x, 6, names[8], true, tileSize));
+      tiles[x][6].piece = pieces[pieces.length - 1];
+    }
+    return [tiles, pieces];
+  }
+}
+
+
 class Board {
   constructor() {
     this.tiles = [];
@@ -9,6 +52,7 @@ class Board {
     this.pieceDrag = false;
     this.gameStatus = [];
     this.copyBoard = null;
+    this.gameBord = new CreateBoard(true);
   }
 
   createBoard() {
@@ -54,7 +98,7 @@ class Board {
 
   checkPlace() {
     const selected = this.tiles[Math.floor(mouseX / tileSize.x)][Math.floor(mouseY / tileSize.y)];
-    if(selected.highlight || selected.cord === this.selectedTile.cord){this.checkClick(selected);}
+    if(selected !== this.selectedTile && selected.highlight || selected.cord === this.selectedTile.cord){this.checkClick(selected);}
     else{doResets(true);}
   }
 
@@ -63,19 +107,22 @@ class Board {
   }
 
   getValidMoves(sel) {
-    const copyBoard = [this.tiles.slice(0), this.pieces.slice(0)];
+    //const copyBoard = [_.cloneDeep(this.tiles), R.clone(this.pieces)];
+    const copyBoard = [this.tiles, this.pieces];
+    console.log("check", copyBoard[0]==this.tiles, copyBoard[1]===this.pieces);
+
     const moves = sel.getMoves().filter(move => {
-      const fromTile = copyBoard[0][sel.cord.x][sel.cord.y];
-      const toTile = copyBoard[0][move.cord.x][move.cord.y];
-      const newCopyBoard = copyBoard.slice(0);
-      newCopyBoard[0][toTile.cord.x][toTile.cord.y].piece = fromTile.piece;
-      newCopyBoard[0][fromTile.cord.x][fromTile.cord.y].piece = null;
-      newCopyBoard[0][toTile.cord.x][toTile.cord.y].piece.pos = toTile.pos;
-      newCopyBoard[0][toTile.cord.x][toTile.cord.y].piece.cord = toTile.cord;
-      console.log("new board?", newCopyBoard == copyBoard, newCopyBoard === copyBoard);
-      return !this.isCheck(newCopyBoard, sel.team);
+      const fromTile = deepClone(this.tiles[sel.cord.x][sel.cord.y]);
+      const toTile = deepClone(this.tiles[move.cord.x][move.cord.y]);
+      console.log("hm",fromTile.piece == sel, fromTile === sel, fromTile.piece, toTile.piece);
+      // copyBoard[0][toTile.cord.x][toTile.cord.y].piece = fromTile.piece;
+      // copyBoard[0][fromTile.cord.x][fromTile.cord.y].piece = null;
+      // copyBoard[0][toTile.cord.x][toTile.cord.y].piece.pos = toTile.pos;
+      // copyBoard[0][toTile.cord.x][toTile.cord.y].piece.cord = toTile.cord;
+      return !this.isCheck(copyBoard, sel.team);
     })
     console.log("new moves?", moves);
+    return moves;
   }
 
   // getValidMoves(selectedPiece) {
@@ -142,7 +189,7 @@ class Board {
       this.selectedTile = selected;
       this.selectedPiece = selected.piece;
       selected.piece?.name
-        ? selected.drawMoves(this.getValidMoves(selected.piece))
+        ? selected.drawMoves(selected.piece.getMoves())
         : null;
     }
   }

@@ -22,5 +22,9 @@
   "homepage": "https://github.com/codesandbox-app/static-template#readme",
   "devDependencies": {
     "serve": "^11.2.0"
+  },
+  "dependencies": {
+    "ramda": "^0.27.0",
+    "requirejs": "^2.3.6"
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable no-undef, no-unused-vars */
 var pieces = [];
 var board;
 let chess;
@@ -76,6 +75,19 @@ function mouseClicked() {
   }
 }
 
+function deepClone(obj) {
+  if (obj === null || typeof obj !== "object")
+    return obj
+  var props = Object.getOwnPropertyDescriptors(obj)
+  for (var prop in props) {
+    props[prop].value = deepClone(props[prop].value)
+  }
+  return Object.create(
+    Object.getPrototypeOf(obj), 
+    props
+  )
+}
+
 function doResets(further = false) {
   board.tiles.forEach((xTiles) =>
     xTiles.forEach((tile) => (tile.highlight = false))
@@ -84,4 +96,8 @@ function doResets(further = false) {
     board.selectedTile = undefined;
     board.selectedPiece = undefined;
   }
+}
+
+function deepCopy (thing) {
+  return JSON.parse(JSON.stringify(thing))
 }
